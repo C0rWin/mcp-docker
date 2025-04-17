@@ -1,0 +1,9 @@
+.git
+.gitignore
+.env
+*.md
+/vendor/
+.idea/
+.vscode/
+*.test
+*.out

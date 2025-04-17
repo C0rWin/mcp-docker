@@ -1,0 +1,13 @@
+/vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+.env
+.idea/
+.vscode/
+.DS_Store
