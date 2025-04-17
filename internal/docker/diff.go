@@ -30,7 +30,7 @@ func DiffHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolRes
 	}
 	result := string(outBytes)
 
-	return mcp.NewToolResultText(fmt.Sprintf("%s", result)), nil
+	return mcp.NewToolResultText(result), nil
 }
 
 // WithDiffTool adds the DiffTool to the MCP server

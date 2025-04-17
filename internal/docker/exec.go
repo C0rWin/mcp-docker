@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
@@ -48,12 +49,12 @@ func ExecHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolRes
 	execCmd := exec.Command("docker", args...)
 	outBytes, err := execCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute command in container %s, \"[%s]\": %w", 
+		return nil, fmt.Errorf("failed to execute command in container %s, \"[%s]\": %w",
 			containerID, strings.Join(execCmd.Args, " "), err)
 	}
 	result := string(outBytes)
 
-	return mcp.NewToolResultText(fmt.Sprintf("%s", result)), nil
+	return mcp.NewToolResultText(result), nil
 }
 
 func WithExecTool(s *server.MCPServer) *server.MCPServer {

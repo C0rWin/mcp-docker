@@ -55,7 +55,7 @@ func HistoryHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallTool
 	}
 	result := string(outBytes)
 
-	return mcp.NewToolResultText(fmt.Sprintf("%s", result)), nil
+	return mcp.NewToolResultText(result), nil
 }
 
 func WithHistoryTool(s *server.MCPServer) *server.MCPServer {
