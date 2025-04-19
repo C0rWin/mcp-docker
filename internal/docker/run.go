@@ -88,9 +88,27 @@ func RunHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResu
 	args = append(args, image)
 
 	if command != "" {
-		// Split the command string into individual arguments
-		cmdArgs := strings.Fields(command)
-		args = append(args, cmdArgs...)
+		// Check if this is a shell command that requires special handling
+		if strings.Contains(command, "/bin/bash -c") || strings.Contains(command, "/bin/sh -c") {
+			// For shell commands with -c, keep everything after -c as a single argument
+			parts := strings.SplitN(command, " -c ", 2)
+			if len(parts) == 2 {
+				args = append(args, parts[0], "-c", parts[1])
+			} else {
+				// Fallback to original behavior
+				cmdArgs := strings.Fields(command)
+				args = append(args, cmdArgs...)
+			}
+		} else if strings.Contains(command, "\"") || strings.Contains(command, "'") || 
+			  strings.Contains(command, "&") || strings.Contains(command, "|") ||
+			  strings.Contains(command, ">") || strings.Contains(command, "<") {
+			// If the command contains quotes or shell operators, pass it as a complete shell command
+			args = append(args, "/bin/sh", "-c", command)
+		} else {
+			// For simple commands without shell operators, use the original approach
+			cmdArgs := strings.Fields(command)
+			args = append(args, cmdArgs...)
+		}
 	}
 
 	runCmd := exec.Command("docker", args...)

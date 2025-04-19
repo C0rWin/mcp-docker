@@ -41,6 +41,8 @@ to quickly create a Cobra application.`,
 		docker.WithImageTools(s)
 		docker.WithSearchTool(s)
 		docker.WithPullTool(s)
+		docker.WithAttachTool(s)
+		docker.WithCommitTool(s)
 
 		if err := server.ServeStdio(s); err != nil {
 			fmt.Println("Error starting server:", err)
