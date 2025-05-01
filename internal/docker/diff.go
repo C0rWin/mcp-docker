@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -23,10 +24,12 @@ var DiffTool = mcp.NewTool("docker_diff",
 func DiffHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	containerID := req.Params.Arguments["containerID"].(string)
 
+	var stderr bytes.Buffer
 	diffCmd := exec.Command("docker", "diff", containerID)
+	diffCmd.Stderr = &stderr
 	outBytes, err := diffCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to show changes for container %s: %w", containerID, err)
+		return nil, fmt.Errorf("failed to show changes for container %s: %w \n %s", containerID, err, stderr.String())
 	}
 	result := string(outBytes)
 

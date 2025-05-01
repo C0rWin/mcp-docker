@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -72,10 +73,12 @@ func CommitHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolR
 		args = append(args, "--pause", pause.(string))
 	}
 
+	var stderr bytes.Buffer
 	commitCmd := exec.Command("docker", args...)
+	commitCmd.Stderr = &stderr
 	outBytes, err := commitCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to commit container: %w", err)
+		return nil, fmt.Errorf("failed to commit container: %w\n %s", err, stderr.String())
 	}
 	result := string(outBytes)
 

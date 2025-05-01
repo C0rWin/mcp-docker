@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -25,10 +26,12 @@ var InspectTool = mcp.NewTool("docker_inspect",
 func InspectHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	containerID := req.Params.Arguments["containerID"].(string)
 
+	var stderr bytes.Buffer
 	inspectCmd := exec.Command("docker", "inspect", containerID)
+	inspectCmd.Stderr = &stderr
 	outBytes, err := inspectCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to inspect container: %w", err)
+		return nil, fmt.Errorf("failed to inspect container: %w \n %s", err, stderr.String())
 	}
 	result := string(outBytes)
 

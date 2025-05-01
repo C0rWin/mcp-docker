@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -47,10 +48,12 @@ var ImageHistoryTool = mcp.NewTool("docker_image_history",
 // ImageListHandler is the handler function that handles image requests
 func ImageListHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	// Implement the logic to list Docker images
+	var stderr bytes.Buffer
 	diffCmd := exec.Command("docker", "image", "ls")
+	diffCmd.Stderr = &stderr
 	outBytes, err := diffCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to list images: %w", err)
+		return nil, fmt.Errorf("failed to list images: %w \n %s", err, stderr.String())
 	}
 	result := string(outBytes)
 
@@ -72,10 +75,12 @@ func ImageInspectHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.Cal
 	if exist {
 		args = append(args, "--format", format.(string))
 	}
+	var stderr bytes.Buffer
 	diffCmd := exec.Command("docker", args...)
+	diffCmd.Stderr = &stderr
 	outBytes, err := diffCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to inspect image %s: %w", imageID, err)
+		return nil, fmt.Errorf("failed to inspect image %s: %w \n %s", imageID, err, stderr.String())
 	}
 	result := string(outBytes)
 	if result == "" {
@@ -99,10 +104,12 @@ func ImageHistoryHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.Cal
 		args = append(args, "--no-trunc")
 	}
 
+	var stderr bytes.Buffer
 	diffCmd := exec.Command("docker", args...)
+	diffCmd.Stderr = &stderr
 	outBytes, err := diffCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to show history for image %s: %w", imageID, err)
+		return nil, fmt.Errorf("failed to show history for image %s: %w \n %s", imageID, err, stderr.String())
 	}
 	result := string(outBytes)
 	if result == "" {

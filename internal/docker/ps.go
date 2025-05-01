@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -58,10 +59,12 @@ func PSHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResul
 		args = append(args, "--no-trunc")
 	}
 
+	var stderr bytes.Buffer
 	psCmd := exec.Command("docker", args...)
+	psCmd.Stderr = &stderr
 	outBytes, err := psCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to list containers: %w", err)
+		return nil, fmt.Errorf("failed to list containers: %w \n %s", err, stderr.String())
 	}
 	result := string(outBytes)
 

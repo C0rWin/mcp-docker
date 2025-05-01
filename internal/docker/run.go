@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -99,9 +100,9 @@ func RunHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResu
 				cmdArgs := strings.Fields(command)
 				args = append(args, cmdArgs...)
 			}
-		} else if strings.Contains(command, "\"") || strings.Contains(command, "'") || 
-			  strings.Contains(command, "&") || strings.Contains(command, "|") ||
-			  strings.Contains(command, ">") || strings.Contains(command, "<") {
+		} else if strings.Contains(command, "\"") || strings.Contains(command, "'") ||
+			strings.Contains(command, "&") || strings.Contains(command, "|") ||
+			strings.Contains(command, ">") || strings.Contains(command, "<") {
 			// If the command contains quotes or shell operators, pass it as a complete shell command
 			args = append(args, "/bin/sh", "-c", command)
 		} else {
@@ -111,11 +112,13 @@ func RunHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResu
 		}
 	}
 
+	var stderr bytes.Buffer
 	runCmd := exec.Command("docker", args...)
+	runCmd.Stderr = &stderr
 	outBytes, err := runCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf(`failed to run container, "[%s]": %w`,
-			strings.Join(runCmd.Args, " "), err)
+		return nil, fmt.Errorf(`failed to run container, "[%s]": %w \n %s`,
+			strings.Join(runCmd.Args, " "), err, stderr.String())
 	}
 	result := string(outBytes)
 

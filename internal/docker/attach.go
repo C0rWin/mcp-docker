@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -22,10 +23,14 @@ func AttachHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolR
 	// Implement the logic to attach to a Docker container
 	// This is a placeholder implementation
 	containerID := req.Params.Arguments["containerID"].(string)
+
+	var stderr bytes.Buffer
 	diffCmd := exec.Command("docker", "attach", containerID)
+	diffCmd.Stderr = &stderr
+
 	outBytes, err := diffCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to attach to container %s: %w", containerID, err)
+		return nil, fmt.Errorf("failed to attach to container %s: %w\n %s", containerID, err, stderr.String())
 	}
 	result := string(outBytes)
 

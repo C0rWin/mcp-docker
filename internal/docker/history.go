@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -48,10 +49,12 @@ func HistoryHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallTool
 		args = append(args, "--human")
 	}
 
+	var stderr bytes.Buffer
 	historyCmd := exec.Command("docker", args...)
+	historyCmd.Stderr = &stderr
 	outBytes, err := historyCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to show history for image %s: %w", image, err)
+		return nil, fmt.Errorf("failed to show history for image %s: %w \n %s", image, err, stderr.String())
 	}
 	result := string(outBytes)
 

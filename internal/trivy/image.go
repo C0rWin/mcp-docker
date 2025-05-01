@@ -1,6 +1,7 @@
 package trivy
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -23,10 +24,12 @@ func ImageHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolRe
 	image := req.Params.Arguments["image"].(string)
 
 	// Run the trivy command to scan the image
+	var stderr bytes.Buffer
 	scanCmd := exec.Command("trivy", "image", image)
+	scanCmd.Stderr = &stderr
 	outBytes, err := scanCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan image: %w", err)
+		return nil, fmt.Errorf("failed to scan image: %w \n %s", err, stderr.String())
 	}
 	result := string(outBytes)
 

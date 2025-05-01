@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -46,11 +47,13 @@ func ExecHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolRes
 	cmdArgs := strings.Fields(command)
 	args = append(args, cmdArgs...)
 
+	var stderr bytes.Buffer
 	execCmd := exec.Command("docker", args...)
+	execCmd.Stderr = &stderr
 	outBytes, err := execCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute command in container %s, \"[%s]\": %w",
-			containerID, strings.Join(execCmd.Args, " "), err)
+		return nil, fmt.Errorf("failed to execute command in container %s, \"[%s]\": %w \n %s",
+			containerID, strings.Join(execCmd.Args, " "), err, stderr.String())
 	}
 	result := string(outBytes)
 

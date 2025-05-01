@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -43,10 +44,12 @@ func SearchHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolR
 		args = append(args, "--limit", limit.(string))
 	}
 
+	var stderr bytes.Buffer
 	searchCmd := exec.Command("docker", args...)
+	searchCmd.Stderr = &stderr
 	outBytes, err := searchCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to search for images: %w", err)
+		return nil, fmt.Errorf("failed to search for images: %w \n %s", err, stderr.String())
 	}
 	result := string(outBytes)
 

@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -39,10 +40,12 @@ func SBOMHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolRes
 		args = append(args, "--output", output)
 	}
 
+	var stderr bytes.Buffer
 	sbomCmd := exec.Command("docker", args...)
+	sbomCmd.Stderr = &stderr
 	outBytes, err := sbomCmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate SBOM for image %s: %w", image, err)
+		return nil, fmt.Errorf("failed to generate SBOM for image %s: %w \n %s", image, err, stderr.String())
 	}
 	result := string(outBytes)
 
