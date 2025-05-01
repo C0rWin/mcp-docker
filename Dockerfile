@@ -2,7 +2,9 @@
 FROM golang:1.24.2-alpine AS builder
 
 # Install necessary build dependencies
-RUN apk add --no-cache git ca-certificates tzdata gcc musl-dev
+RUN apk add --no-cache git curl ca-certificates tzdata gcc musl-dev
+
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.61.1
 
 # Set working directory
 WORKDIR /app
@@ -34,6 +36,7 @@ ENV TZ=UTC
 # Copy the binary from the builder stage
 COPY --from=builder /app/mcp-docker /usr/local/bin/mcp-docker
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/local/bin/trivy /usr/local/bin/trivy
 
 # Create a non-root user for the application
 RUN addgroup -S mcp && adduser -S mcp -G mcp && \
@@ -58,4 +61,3 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Command to run (Docker daemon must run as root)
 ENTRYPOINT ["/usr/local/bin/mcp-docker", "serve"]
-
